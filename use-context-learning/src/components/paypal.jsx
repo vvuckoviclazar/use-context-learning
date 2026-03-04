@@ -5,7 +5,6 @@ import { CURRENCIES } from "../Utils/CurrencyUtil";
 const PayPal = () => {
   const currency = useContext(CurrencyContext);
   const amount = useContext(AmountContext);
-  console.log(currency, amount);
 
   return (
     <p>
