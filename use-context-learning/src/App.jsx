@@ -1,16 +1,23 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useReducer, useEffect } from "react";
 import Payment from "./components/payment";
 import { CURRENCIES } from "./Utils/CurrencyUtil";
+import {
+  userReducer,
+  loadUserState,
+  initialUserState,
+} from "./Reducers/User.jsx";
 
 export const CurrencyContext = createContext("USD");
 export const AmountContext = createContext(0);
 
 function App() {
+  const [userState, dispatch] = useReducer(
+    userReducer,
+    initialUserState,
+    loadUserState
+  );
   const [currency, setCurrency] = useState("USD");
   const [amount, setAmount] = useState(0);
-  const [username, setUsername] = useState(null);
-  const [money, setMoney] = useState(null);
-  const [isUserCreated, setIsUserCreated] = useState(false);
 
   const updateCurrency = (currency) => {
     setCurrency(currency);
@@ -22,15 +29,22 @@ function App() {
 
   const saveUser = () => {
     if (
-      username === null ||
-      username.trim() === "" ||
-      money === null ||
-      isNaN(money)
+      userState.username === null ||
+      userState.username.trim() === "" ||
+      userState.money === null ||
+      isNaN(userState.money)
     ) {
       return;
     }
-    setIsUserCreated(true);
+    dispatch({ type: "SET_USER_CREATED", payload: true });
+    console.log(userState);
   };
+
+  useEffect(() => {
+    if (userState.isUserCreated) {
+      localStorage.setItem("userState", JSON.stringify(userState));
+    }
+  }, [userState]);
 
   return (
     <>
@@ -42,15 +56,19 @@ function App() {
 
       <input onInput={(e) => updateAmount(e.target.value)} />
 
-      {!isUserCreated && (
+      {!userState.isUserCreated && (
         <form>
           <input
             placeholder="Enter your username"
-            onInput={(e) => setUsername(e.target.value)}
+            onInput={(e) =>
+              dispatch({ type: "SET_USERNAME", payload: e.target.value })
+            }
           />
           <input
             placeholder="Enter your money"
-            onInput={(e) => setMoney(parseInt(e.target.value))}
+            onInput={(e) =>
+              dispatch({ type: "SET_MONEY", payload: e.target.value })
+            }
           />
           <button type="button" onClick={saveUser}>
             Create user
